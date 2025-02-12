@@ -3,46 +3,69 @@ const { active } = Astro.props;
 ---
 
 <nav class="bg-gray-800 p-4 mb-8 rounded-lg">
-  <ul class="flex space-x-4">
-    <li>
-      <a 
-        href="/admin/dashboard" 
-        class={`px-4 py-2 rounded ${active === 'dashboard' ? 'bg-orange-500' : 'hover:bg-gray-700'}`}
+  <ul class="flex flex-wrap gap-2 md:gap-4">
+    <li class="w-full sm:w-auto">
+      <a
+        href="/admin/dashboard"
+        class={`block px-4 py-2 rounded ${active === "dashboard" ? "bg-orange-500" : "hover:bg-gray-700"}`}
       >
         Dashboard
       </a>
     </li>
-    <li>
-      <a 
-        href="/admin/profile" 
-        class={`px-4 py-2 rounded ${active === 'profile' ? 'bg-orange-500' : 'hover:bg-gray-700'}`}
+    <li class="w-full sm:w-auto">
+      <a
+        href="/admin/profile"
+        class={`block px-4 py-2 rounded ${active === "profile" ? "bg-orange-500" : "hover:bg-gray-700"}`}
       >
         Profile
       </a>
     </li>
-    <li>
-      <a 
-        href="/admin/experiences" 
-        class={`px-4 py-2 rounded ${active === 'experiences' ? 'bg-orange-500' : 'hover:bg-gray-700'}`}
+    <li class="w-full sm:w-auto">
+      <a
+        href="/admin/experiences"
+        class={`block px-4 py-2 rounded ${active === "experiences" ? "bg-orange-500" : "hover:bg-gray-700"}`}
       >
         Experiences
       </a>
     </li>
-    <li>
-      <a 
-        href="/admin/projects" 
-        class={`px-4 py-2 rounded ${active === 'projects' ? 'bg-orange-500' : 'hover:bg-gray-700'}`}
+    <li class="w-full sm:w-auto">
+      <a
+        href="/admin/projects"
+        class={`block px-4 py-2 rounded ${active === "projects" ? "bg-orange-500" : "hover:bg-gray-700"}`}
       >
         Projects
       </a>
     </li>
-    <li>
-      <a 
-        href="/admin/skills" 
-        class={`px-4 py-2 rounded ${active === 'skills' ? 'bg-orange-500' : 'hover:bg-gray-700'}`}
+    <li class="w-full sm:w-auto">
+      <a
+        href="/admin/skills"
+        class={`block px-4 py-2 rounded ${active === "skills" ? "bg-orange-500" : "hover:bg-gray-700"}`}
       >
         Skills
       </a>
     </li>
+
+    <li>
+      <div class="flex justify-between items-center mb-8">
+        <button
+          id="logout-button"
+          class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+        >
+          Logout
+        </button>
+      </div>
+    </li>
   </ul>
 </nav>
+
+<script>
+  import { supabase } from "../lib/supabase";
+
+  // Logout handler
+  document
+    .getElementById("logout-button")
+    ?.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.href = "/";
+    });
+</script>

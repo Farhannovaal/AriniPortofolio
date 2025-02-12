@@ -22,16 +22,6 @@ const { data: projects } = await supabase
     <div class="max-w-6xl mx-auto">
       <AdminNav active="dashboard" />
 
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold">Admin Dashboard</h1>
-        <button
-          id="logout-button"
-          class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
-        >
-          Logout
-        </button>
-      </div>
-
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- Profile Section -->
         <div class="bg-gray-800 p-6 rounded-lg">
@@ -184,14 +174,6 @@ const { data: projects } = await supabase
       console.error("Error parsing auth token:", error);
       window.location.href = "/";
     }
-
-    // Logout handler
-    document
-      .getElementById("logout-button")
-      ?.addEventListener("click", async () => {
-        await supabase.auth.signOut();
-        window.location.href = "/";
-      });
 
     // Profile form handler
     document
