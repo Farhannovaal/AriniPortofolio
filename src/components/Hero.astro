@@ -1,24 +1,40 @@
 ---
+import { supabase } from "../lib/supabase";
+// Fetch profile data
+const { data: profile } = await supabase.from("profiles").select("*").single();
 ---
-<section class="min-h-screen flex items-center justify-center relative overflow-hidden">
+
+<section
+  class="min-h-screen flex items-center justify-center relative overflow-hidden"
+>
   <div class="container mx-auto px-4">
     <div class="text-center">
       <h1 class="text-6xl font-bold mb-4">
-        <span class="text-orange-500">PORTOFOLIO</span>
+        <span class="text-orange-500">{profile.headline}</span>
       </h1>
-      <h2 class="text-4xl mb-8">Haliza Arini</h2>
+      <h2 class="text-4xl mb-8">{profile.full_name}</h2>
       <p class="text-xl text-gray-300 mb-8">
-        Ex - Intern MSIB Program and Academic Media Learning at PT Bukit Makmur Mandiri Utama (BIRU) | Educational Technology
+        {profile.bio}
       </p>
       <div class="flex justify-center gap-4">
-        <a href="tel:+6285904480269" class="text-gray-300 hover:text-orange-500">
-          +6285904480269
+        <a
+          href="tel:+6285904480269"
+          class="text-gray-300 hover:text-orange-500"
+        >
+          {profile.phone}
         </a>
-        <a href="mailto:halizaarini@gmail.com" class="text-gray-300 hover:text-orange-500">
-          halizaarini@gmail.com
+        <a
+          href="mailto:halizaarini@gmail.com"
+          class="text-gray-300 hover:text-orange-500"
+        >
+          {profile.email}
         </a>
-        <a href="https://linkedin.com/in/halizaarini" target="_blank" class="text-gray-300 hover:text-orange-500">
-          LinkedIn
+        <a
+          href="https://linkedin.com/in/halizaarini"
+          target="_blank"
+          class="text-gray-300 hover:text-orange-500"
+        >
+          {profile.linkedin_url}
         </a>
       </div>
     </div>

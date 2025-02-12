@@ -119,12 +119,16 @@ const { data: profile } = await supabase.from("profiles").select("*").single();
     );
     if (!authToken) return (window.location.href = "/");
 
+    let userId = null;
+
     try {
       const parsedToken = JSON.parse(authToken);
       if (parsedToken.expires_at < Math.floor(Date.now() / 1000)) {
         console.warn("Token sudah kedaluwarsa.");
         window.location.href = "/";
       }
+      userId = parsedToken.user.id;
+      console.log("userId", userId);
     } catch (error) {
       console.error("Error parsing auth token:", error);
       window.location.href = "/";
@@ -166,7 +170,7 @@ const { data: profile } = await supabase.from("profiles").select("*").single();
             ...(avatarUrl && { avatar_url: avatarUrl }),
             updated_at: new Date().toISOString(),
           })
-          .eq("id" /* current profile id */);
+          .eq("user_id", userId);
 
         if (updateError) throw updateError;
 

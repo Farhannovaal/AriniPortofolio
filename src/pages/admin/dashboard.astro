@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabase";
 
 // Fetch data
 const { data: profile } = await supabase.from("profiles").select("*").single();
+console.log("profile cek", profile);
 
 const { data: experiences } = await supabase
   .from("experiences")
