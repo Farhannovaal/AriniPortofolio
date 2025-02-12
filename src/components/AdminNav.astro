@@ -1,0 +1,48 @@
+---
+const { active } = Astro.props;
+---
+
+<nav class="bg-gray-800 p-4 mb-8 rounded-lg">
+  <ul class="flex space-x-4">
+    <li>
+      <a 
+        href="/admin/dashboard" 
+        class={`px-4 py-2 rounded ${active === 'dashboard' ? 'bg-orange-500' : 'hover:bg-gray-700'}`}
+      >
+        Dashboard
+      </a>
+    </li>
+    <li>
+      <a 
+        href="/admin/profile" 
+        class={`px-4 py-2 rounded ${active === 'profile' ? 'bg-orange-500' : 'hover:bg-gray-700'}`}
+      >
+        Profile
+      </a>
+    </li>
+    <li>
+      <a 
+        href="/admin/experiences" 
+        class={`px-4 py-2 rounded ${active === 'experiences' ? 'bg-orange-500' : 'hover:bg-gray-700'}`}
+      >
+        Experiences
+      </a>
+    </li>
+    <li>
+      <a 
+        href="/admin/projects" 
+        class={`px-4 py-2 rounded ${active === 'projects' ? 'bg-orange-500' : 'hover:bg-gray-700'}`}
+      >
+        Projects
+      </a>
+    </li>
+    <li>
+      <a 
+        href="/admin/skills" 
+        class={`px-4 py-2 rounded ${active === 'skills' ? 'bg-orange-500' : 'hover:bg-gray-700'}`}
+      >
+        Skills
+      </a>
+    </li>
+  </ul>
+</nav>

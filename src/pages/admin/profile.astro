@@ -1,0 +1,180 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import AdminNav from "../../components/AdminNav.astro";
+import { supabase } from "../../lib/supabase";
+
+// Fetch profile data
+const { data: profile } = await supabase.from("profiles").select("*").single();
+---
+
+<Layout title="Admin - Profile">
+  <main class="bg-gray-900 min-h-screen text-white p-8">
+    <div class="max-w-4xl mx-auto">
+      <AdminNav active="profile" />
+
+      <div class="bg-gray-800 p-6 rounded-lg">
+        <h2 class="text-2xl font-bold mb-6">Edit Profile</h2>
+
+        <form id="profile-form" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium mb-2">Full Name</label>
+              <input
+                type="text"
+                name="full_name"
+                value={profile?.full_name}
+                class="w-full bg-gray-700 rounded p-2"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={profile?.email}
+                class="w-full bg-gray-700 rounded p-2"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">Phone</label>
+              <input
+                type="tel"
+                name="phone"
+                value={profile?.phone}
+                class="w-full bg-gray-700 rounded p-2"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">LinkedIn URL</label>
+              <input
+                type="url"
+                name="linkedin_url"
+                value={profile?.linkedin_url}
+                class="w-full bg-gray-700 rounded p-2"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-2">Headline</label>
+            <input
+              type="text"
+              name="headline"
+              value={profile?.headline}
+              class="w-full bg-gray-700 rounded p-2"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-2">Bio</label>
+            <textarea name="bio" rows="4" class="w-full bg-gray-700 rounded p-2"
+              >{profile?.bio}</textarea
+            >
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-2">Profile Photo</label>
+            <div class="flex items-center space-x-4">
+              {
+                profile?.avatar_url && (
+                  <img
+                    src={profile.avatar_url}
+                    alt="Profile"
+                    class="w-24 h-24 object-cover rounded-lg"
+                  />
+                )
+              }
+              <input
+                type="file"
+                id="avatar"
+                accept="image/*"
+                class="bg-gray-700 rounded p-2"
+              />
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <button
+              type="submit"
+              class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { supabase } from "../../lib/supabase";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const authToken = localStorage.getItem(
+      "sb-xyrcjvuxxvdpghcvsjzf-auth-token"
+    );
+    if (!authToken) return (window.location.href = "/");
+
+    try {
+      const parsedToken = JSON.parse(authToken);
+      if (parsedToken.expires_at < Math.floor(Date.now() / 1000)) {
+        console.warn("Token sudah kedaluwarsa.");
+        window.location.href = "/";
+      }
+    } catch (error) {
+      console.error("Error parsing auth token:", error);
+      window.location.href = "/";
+    }
+
+    const form = document.getElementById("profile-form");
+    const avatarInput = document.getElementById("avatar") as HTMLInputElement;
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target as HTMLFormElement);
+      const avatarFile = avatarInput.files?.[0];
+
+      try {
+        let avatarUrl = null;
+
+        if (avatarFile) {
+          // Upload new avatar
+          const { data, error: uploadError } = await supabase.storage
+            .from("avatars")
+            .upload(`avatar-${Date.now()}`, avatarFile);
+
+          if (uploadError) throw uploadError;
+
+          avatarUrl = supabase.storage.from("avatars").getPublicUrl(data.path)
+            .data.publicUrl;
+        }
+
+        // Update profile
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({
+            full_name: formData.get("full_name"),
+            email: formData.get("email"),
+            phone: formData.get("phone"),
+            linkedin_url: formData.get("linkedin_url"),
+            headline: formData.get("headline"),
+            bio: formData.get("bio"),
+            ...(avatarUrl && { avatar_url: avatarUrl }),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id" /* current profile id */);
+
+        if (updateError) throw updateError;
+
+        alert("Profile updated successfully!");
+        window.location.reload();
+      } catch (error) {
+        alert("Error updating profile: " + error.message);
+      }
+    });
+  });
+</script>

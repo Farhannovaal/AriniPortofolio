@@ -1,0 +1,154 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import AdminNav from "../../components/AdminNav.astro";
+import { supabase } from "../../lib/supabase";
+
+// Protect this route
+const { data } = await supabase.auth.getSession();
+const session = data?.session;
+
+console.log("auth session", session);
+if (!session || !session.user) {
+  return Astro.redirect("/");
+}
+// Fetch skills
+const { data: skills } = await supabase
+  .from("skills")
+  .select("*")
+  .order("category", { ascending: true });
+
+// Group skills by category
+const skillsByCategory = skills?.reduce(
+  (acc, skill) => {
+    const category = skill.category || "Other";
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(skill);
+    return acc;
+  },
+  {} as Record<string, typeof skills>
+);
+---
+
+<Layout title="Admin - Skills">
+  <main class="bg-gray-900 min-h-screen text-white p-8">
+    <div class="max-w-4xl mx-auto">
+      <AdminNav active="skills" />
+
+      <div class="bg-gray-800 p-6 rounded-lg mb-8">
+        <h2 class="text-2xl font-bold mb-6">Add Skill</h2>
+
+        <form id="skill-form" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium mb-2">Skill Name</label>
+              <input
+                type="text"
+                name="name"
+                required
+                class="w-full bg-gray-700 rounded p-2"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">Category</label>
+              <input
+                type="text"
+                name="category"
+                class="w-full bg-gray-700 rounded p-2"
+                placeholder="e.g., Programming, Design, Tools"
+              />
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <button
+              type="submit"
+              class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded"
+            >
+              Add Skill
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="bg-gray-800 p-6 rounded-lg">
+        <h2 class="text-2xl font-bold mb-6">Skills by Category</h2>
+
+        <div class="space-y-8">
+          {
+            Object.entries(skillsByCategory || {}).map(
+              ([category, categorySkills]) => (
+                <div>
+                  <h3 class="text-xl font-semibold mb-4">{category}</h3>
+                  <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {categorySkills?.map((skill) => (
+                      <div class="bg-gray-700 p-3 rounded-lg flex justify-between items-center">
+                        <span>{skill.name}</span>
+                        <button
+                          class="delete-skill text-red-500 hover:text-red-400"
+                          data-id={skill.id}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { supabase } from "../../lib/supabase";
+
+  const form = document.getElementById("skill-form");
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+
+    try {
+      const { error } = await supabase.from("skills").insert({
+        name: formData.get("name"),
+        category: formData.get("category"),
+      });
+
+      if (error) throw error;
+
+      alert("Skill added successfully!");
+      window.location.reload();
+    } catch (error) {
+      alert("Error adding skill: " + error.message);
+    }
+  });
+
+  // Delete skill handler
+  document.querySelectorAll(".delete-skill").forEach((button) => {
+    button.addEventListener("click", async () => {
+      if (!confirm("Are you sure you want to delete this skill?")) return;
+
+      const skillId = (button as HTMLButtonElement).dataset.id;
+
+      try {
+        const { error } = await supabase
+          .from("skills")
+          .delete()
+          .eq("id", skillId);
+
+        if (error) throw error;
+
+        alert("Skill deleted successfully!");
+        window.location.reload();
+      } catch (error) {
+        alert("Error deleting skill: " + error.message);
+      }
+    });
+  });
+</script>
