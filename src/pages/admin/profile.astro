@@ -128,7 +128,6 @@ const { data: profile } = await supabase.from("profiles").select("*").single();
         window.location.href = "/";
       }
       userId = parsedToken.user.id;
-      console.log("userId", userId);
     } catch (error) {
       console.error("Error parsing auth token:", error);
       window.location.href = "/";

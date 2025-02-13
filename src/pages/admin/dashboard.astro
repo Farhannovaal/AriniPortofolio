@@ -5,7 +5,6 @@ import { supabase } from "../../lib/supabase";
 
 // Fetch data
 const { data: profile } = await supabase.from("profiles").select("*").single();
-console.log("profile cek", profile);
 
 const { data: experiences } = await supabase
   .from("experiences")
@@ -165,12 +164,15 @@ const { data: projects } = await supabase
     );
     if (!authToken) return (window.location.href = "/");
 
+    let userId = null;
+
     try {
       const parsedToken = JSON.parse(authToken);
       if (parsedToken.expires_at < Math.floor(Date.now() / 1000)) {
         console.warn("Token sudah kedaluwarsa.");
         window.location.href = "/";
       }
+      userId = parsedToken.user.id;
     } catch (error) {
       console.error("Error parsing auth token:", error);
       window.location.href = "/";
@@ -210,7 +212,7 @@ const { data: projects } = await supabase
             headline: formData.get("headline"),
             ...(avatarUrl && { avatar_url: avatarUrl }),
           })
-          .eq("id" /* current profile id */);
+          .eq("user_id", userId /* current profile id */);
 
         if (error) {
           alert("Error updating profile: " + error.message);
