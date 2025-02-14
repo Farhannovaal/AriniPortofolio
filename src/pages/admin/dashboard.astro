@@ -193,7 +193,7 @@ const { data: projects } = await supabase
         let avatarUrl = null;
         if (avatarFile) {
           const { data, error } = await supabase.storage
-            .from("avatars")
+            .from("avatar")
             .upload(`avatar-${Date.now()}`, avatarFile);
 
           if (error) {
@@ -201,7 +201,7 @@ const { data: projects } = await supabase
             return;
           }
 
-          avatarUrl = supabase.storage.from("avatars").getPublicUrl(data.path)
+          avatarUrl = supabase.storage.from("avatar").getPublicUrl(data.path)
             .data.publicUrl;
         }
 

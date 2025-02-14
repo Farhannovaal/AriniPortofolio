@@ -147,12 +147,12 @@ const { data: profile } = await supabase.from("profiles").select("*").single();
         if (avatarFile) {
           // Upload new avatar
           const { data, error: uploadError } = await supabase.storage
-            .from("avatars")
+            .from("avatar")
             .upload(`avatar-${Date.now()}`, avatarFile);
 
           if (uploadError) throw uploadError;
 
-          avatarUrl = supabase.storage.from("avatars").getPublicUrl(data.path)
+          avatarUrl = supabase.storage.from("avatar").getPublicUrl(data.path)
             .data.publicUrl;
         }
 
