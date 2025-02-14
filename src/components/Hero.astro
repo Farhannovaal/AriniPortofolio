@@ -1,41 +1,79 @@
 ---
 import { supabase } from "../lib/supabase";
 // Fetch profile data
-const { data: profile } = await supabase.from("profiles").select("*").single();
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("*")
+  .limit(1)
+  .maybeSingle();
 ---
 
 <section
-  class="min-h-screen flex items-center justify-center relative overflow-hidden"
+  class="min-h-screen flex items-center justify-center bg-gray-800 relative overflow-hidden"
 >
-  <div class="container mx-auto px-4 sm:px-6 lg:px-8 w-full">
-    <div class="text-center max-w-3xl mx-auto">
-      <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-4">
-        <span class="text-orange-500">{profile.headline}</span>
-      </h1>
-      <h2 class="text-2xl sm:text-3xl md:text-4xl mb-6">{profile.full_name}</h2>
-      <p class="text-lg sm:text-xl text-gray-300 mb-6 leading-relaxed">
-        {profile.bio}
-      </p>
-      <div class="flex flex-wrap justify-center gap-4 sm:gap-6">
-        <a
-          href={`tel:${profile.phone}`}
-          class="text-gray-300 hover:text-orange-500 break-all"
+  <div
+    class="container mx-auto px-4 sm:px-6 lg:px-8 w-full border-2 border-green-500 rounded-lg p-6"
+  >
+    {/* Grid Layout */}
+    <div
+      class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center border border-green-500 rounded-lg"
+    >
+      {/* Kiri - Data Profile */}
+      <div class="text-center md:text-left px-8 py-12">
+        {/* Judul */}
+        <h1 class="text-5xl md:text-6xl font-bold mb-4">
+          <span class="text-orange-500">PORTOFOLIO</span>
+        </h1>
+        <h2 class="text-3xl md:text-4xl font-semibold text-white mb-6">
+          Haliza Arini
+        </h2>
+
+        {/* Deskripsi */}
+        <p class="text-lg text-gray-300 mb-6 leading-relaxed">
+          Ex - Intern MSIB Program and Academic Media Learning at PT Bukit
+          Makmur Mandiri Utama (BIRU) | Educational Technology
+        </p>
+
+        {/* Informasi Kontak */}
+        <div
+          class="flex flex-wrap justify-center md:justify-start gap-6 border-t border-green-500 pt-4"
         >
-          {profile.phone}
-        </a>
-        <a
-          href={`mailto:${profile.email}`}
-          class="text-gray-300 hover:text-orange-500 break-all"
+          <a
+            href="tel:+6289604080269"
+            class="text-gray-300 hover:text-orange-500"
+          >
+            +6289604080269
+          </a>
+          <a
+            href="mailto:halizaarini@gmail.com"
+            class="text-gray-300 hover:text-orange-500"
+          >
+            halizaarini@gmail.com
+          </a>
+          <a
+            href="https://linkedin.com/in/halizaarini"
+            target="_blank"
+            class="text-gray-300 hover:text-orange-500"
+          >
+            linkedin.com/in/halizaarini
+          </a>
+        </div>
+      </div>
+
+      {/* Kanan - Foto Profile */}
+      <div class="relative">
+        <img
+          src={profile.avatar_url}
+          alt="Haliza Arini"
+          class="w-full h-auto md:h-full object-cover rounded-lg shadow-lg border-l-2 border-green-500"
+        />
+
+        {/* Tahun di sudut kanan bawah */}
+        <span
+          class="absolute bottom-4 right-4 bg-green-500 text-white px-4 py-2 text-lg font-bold rounded-full"
         >
-          {profile.email}
-        </a>
-        <a
-          href={profile.linkedin_url}
-          target="_blank"
-          class="text-gray-300 hover:text-orange-500 break-all"
-        >
-          LinkedIn
-        </a>
+          2025
+        </span>
       </div>
     </div>
   </div>

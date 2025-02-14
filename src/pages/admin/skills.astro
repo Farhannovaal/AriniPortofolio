@@ -7,28 +7,11 @@ import { supabase } from "../../lib/supabase";
 const { data } = await supabase.auth.getSession();
 const session = data?.session;
 
-console.log("auth session", session);
-if (!session || !session.user) {
-  return Astro.redirect("/");
-}
 // Fetch skills
 const { data: skills } = await supabase
   .from("skills")
   .select("*")
   .order("category", { ascending: true });
-
-// Group skills by category
-const skillsByCategory = skills?.reduce(
-  (acc, skill) => {
-    const category = skill.category || "Other";
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(skill);
-    return acc;
-  },
-  {} as Record<string, typeof skills>
-);
 ---
 
 <Layout title="Admin - Skills">
@@ -42,23 +25,54 @@ const skillsByCategory = skills?.reduce(
         <form id="skill-form" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-sm font-medium mb-2">Skill Name</label>
+              <label class="block text-sm font-medium mb-2">Biography</label>
               <input
                 type="text"
-                name="name"
+                name="biography"
                 required
                 class="w-full bg-gray-700 rounded p-2"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium mb-2">Category</label>
-              <input
-                type="text"
-                name="category"
-                class="w-full bg-gray-700 rounded p-2"
-                placeholder="e.g., Programming, Design, Tools"
-              />
+              <label class="block text-sm font-medium mb-2">Skills</label>
+              <div id="skills-container" class="space-y-2">
+                <div class="flex space-x-2">
+                  <input
+                    type="text"
+                    class="w-full bg-gray-700 rounded p-2 skill-input"
+                    placeholder="e.g., Programming, Design, Tools"
+                  />
+                  <button
+                    type="button"
+                    id="add-skill"
+                    class="bg-green-500 text-white px-3 py-1 rounded"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">Skill Photo</label>
+              <div class="flex items-center space-x-4">
+                {
+                  skills?.avatar_url && (
+                    <img
+                      src={skills.avatar_url}
+                      alt="Profile"
+                      class="w-24 h-24 object-cover rounded-lg"
+                    />
+                  )
+                }
+                <input
+                  type="file"
+                  id="avatar"
+                  accept="image/*"
+                  class="bg-gray-700 rounded p-2"
+                />
+              </div>
             </div>
           </div>
 
@@ -72,35 +86,6 @@ const skillsByCategory = skills?.reduce(
           </div>
         </form>
       </div>
-
-      <div class="bg-gray-800 p-6 rounded-lg">
-        <h2 class="text-2xl font-bold mb-6">Skills by Category</h2>
-
-        <div class="space-y-8">
-          {
-            Object.entries(skillsByCategory || {}).map(
-              ([category, categorySkills]) => (
-                <div>
-                  <h3 class="text-xl font-semibold mb-4">{category}</h3>
-                  <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {categorySkills?.map((skill) => (
-                      <div class="bg-gray-700 p-3 rounded-lg flex justify-between items-center">
-                        <span>{skill.name}</span>
-                        <button
-                          class="delete-skill text-red-500 hover:text-red-400"
-                          data-id={skill.id}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )
-            )
-          }
-        </div>
-      </div>
     </div>
   </main>
 </Layout>
@@ -108,47 +93,97 @@ const skillsByCategory = skills?.reduce(
 <script>
   import { supabase } from "../../lib/supabase";
 
-  const form = document.getElementById("skill-form");
-
-  form?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-
+  document.addEventListener("DOMContentLoaded", () => {
+    const authToken = localStorage.getItem(
+      "sb-xyrcjvuxxvdpghcvsjzf-auth-token"
+    );
+    if (!authToken) return (window.location.href = "/");
+    let userId = null;
     try {
-      const { error } = await supabase.from("skills").insert({
-        name: formData.get("name"),
-        category: formData.get("category"),
-      });
-
-      if (error) throw error;
-
-      alert("Skill added successfully!");
-      window.location.reload();
+      const parsedToken = JSON.parse(authToken);
+      if (parsedToken.expires_at < Math.floor(Date.now() / 1000)) {
+        console.warn("Token sudah kedaluwarsa.");
+        window.location.href = "/";
+      }
+      userId = parsedToken.user.id;
     } catch (error) {
-      alert("Error adding skill: " + error.message);
+      console.error("Error parsing auth token:", error);
+      window.location.href = "/";
     }
-  });
 
-  // Delete skill handler
-  document.querySelectorAll(".delete-skill").forEach((button) => {
-    button.addEventListener("click", async () => {
-      if (!confirm("Are you sure you want to delete this skill?")) return;
+    const form = document.getElementById("skill-form");
+    const avatarInput = document.getElementById("avatar");
+    const skillsContainer = document.getElementById("skills-container");
+    const addSkillButton = document.getElementById("add-skill");
 
-      const skillId = (button as HTMLButtonElement).dataset.id;
+    addSkillButton.addEventListener("click", () => {
+      const newSkillInput = document.createElement("input");
+      newSkillInput.type = "text";
+      newSkillInput.name = "skills";
+      newSkillInput.className = "w-full bg-gray-700 rounded p-2 skill-input";
+      newSkillInput.placeholder = "e.g., Programming, Design, Tools";
+      skillsContainer.appendChild(newSkillInput);
+    });
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const avatarFile = avatarInput.files?.[0];
+      const skills = Array.from(document.querySelectorAll(".skill-input"))
+        .map((input) => input.value)
+        .filter((skill) => skill.trim() !== "");
 
       try {
-        const { error } = await supabase
-          .from("skills")
-          .delete()
-          .eq("id", skillId);
+        let avatarUrl = null;
+
+        if (avatarFile) {
+          // Upload new avatar
+          const { data, error: uploadError } = await supabase.storage
+            .from("avatar")
+            .upload(`avatar-${Date.now()}`, avatarFile);
+
+          if (uploadError) throw uploadError;
+
+          avatarUrl = supabase.storage.from("avatar").getPublicUrl(data.path)
+            .data.publicUrl;
+        }
+
+        const { error } = await supabase.from("skills").insert({
+          biography: formData.get("biography"),
+          skills: skills.join(", "),
+          ...(avatarUrl && { avatar_url: avatarUrl }),
+        });
 
         if (error) throw error;
 
-        alert("Skill deleted successfully!");
+        alert("Skill added successfully!");
         window.location.reload();
       } catch (error) {
-        alert("Error deleting skill: " + error.message);
+        alert("Error adding skill: " + error.message);
       }
+    });
+
+    // Delete skill handler
+    document.querySelectorAll(".delete-skill").forEach((button) => {
+      button.addEventListener("click", async () => {
+        if (!confirm("Are you sure you want to delete this skill?")) return;
+
+        const skillId = button.dataset.id;
+
+        try {
+          const { error } = await supabase
+            .from("skills")
+            .delete()
+            .eq("id", skillId);
+
+          if (error) throw error;
+
+          alert("Skill deleted successfully!");
+          window.location.reload();
+        } catch (error) {
+          alert("Error deleting skill: " + error.message);
+        }
+      });
     });
   });
 </script>
