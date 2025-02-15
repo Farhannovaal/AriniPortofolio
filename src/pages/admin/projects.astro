@@ -219,98 +219,149 @@ const projectsByCategory = projects?.reduce((acc, project) => {
       imageInput.click();
     });
 
-    // Preview multiple images
+    // Event untuk menangani pemilihan gambar
     imageInput.addEventListener("change", (event) => {
-      const files = event.target.files;
-      Array.from(files).forEach((file) => {
-        if (!selectedImages.some((img) => img.name === file.name)) {
-          selectedImages.push(file);
+      const files = Array.from(event.target.files);
+      const allowedExtensions = ["image/jpeg", "image/png", "image/gif"];
+      let errorMessages = [];
+      let validFiles = [];
 
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const imgWrapper = document.createElement("div");
-            imgWrapper.classList.add("relative");
+      files.forEach((file) => {
+        if (!allowedExtensions.includes(file.type)) {
+          errorMessages.push(
+            `File "${file.name}" harus berupa JPG, PNG, atau GIF.`
+          );
+          return;
+        }
 
-            const img = document.createElement("img");
-            img.src = e.target.result;
-            img.classList.add("w-20", "h-20", "object-cover", "rounded-lg");
+        if (file.size > 2 * 1024 * 1024) {
+          errorMessages.push(`Ukuran file "${file.name}" melebihi 2MB.`);
+          return;
+        }
 
-            // Tombol hapus
-            const removeBtn = document.createElement("button");
-            removeBtn.innerText = "×";
-            removeBtn.classList.add(
-              "absolute",
-              "top-0",
-              "right-0",
-              "bg-red-500",
-              "text-white",
-              "rounded-full",
-              "w-6",
-              "h-6",
-              "flex",
-              "items-center",
-              "justify-center",
-              "text-xs"
-            );
-            removeBtn.addEventListener("click", () => {
-              selectedImages = selectedImages.filter(
-                (img) => img.name !== file.name
-              );
-              imgWrapper.remove();
-            });
-
-            imgWrapper.appendChild(img);
-            imgWrapper.appendChild(removeBtn);
-            previewContainer.appendChild(imgWrapper);
-          };
-          reader.readAsDataURL(file);
+        // Cegah duplikasi file
+        if (
+          !selectedImages.some((img) => img.lastModified === file.lastModified)
+        ) {
+          validFiles.push(file);
         }
       });
+
+      if (errorMessages.length > 0) {
+        alert(errorMessages.join("\n"));
+        imageInput.value = "";
+        return;
+      }
+
+      selectedImages = [...selectedImages, ...validFiles];
+
+      // Render gambar yang dipilih
+      validFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const imgWrapper = document.createElement("div");
+          imgWrapper.classList.add("relative");
+          imgWrapper.setAttribute(
+            "data-index",
+            selectedImages.length - validFiles.length + index
+          );
+
+          const img = document.createElement("img");
+          img.src = e.target.result;
+          img.classList.add("w-20", "h-20", "object-cover", "rounded-lg");
+
+          // Tombol hapus
+          const removeBtn = document.createElement("button");
+          removeBtn.innerText = "×";
+          removeBtn.classList.add(
+            "absolute",
+            "top-0",
+            "right-0",
+            "bg-red-500",
+            "text-white",
+            "rounded-full",
+            "w-6",
+            "h-6",
+            "flex",
+            "items-center",
+            "justify-center",
+            "text-xs"
+          );
+
+          removeBtn.addEventListener("click", () => {
+            const indexToRemove = parseInt(
+              imgWrapper.getAttribute("data-index")
+            );
+            selectedImages.splice(indexToRemove, 1);
+            previewContainer.removeChild(imgWrapper);
+          });
+
+          imgWrapper.appendChild(img);
+          imgWrapper.appendChild(removeBtn);
+          previewContainer.appendChild(imgWrapper);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      imageInput.value = "";
+      console.log("Selected Images:", selectedImages);
     });
 
     form?.addEventListener("submit", async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
-      const files = imageInput.files;
 
       try {
         let imageUrls = [];
 
-        if (files.length > 0) {
-          const uploadPromises = Array.from(files).map(async (file) => {
+        if (selectedImages.length > 0) {
+          console.log("Files to upload:", selectedImages);
+
+          const uploadPromises = selectedImages.map(async (file) => {
             const filePath = `media-${Date.now()}-${file.name}`;
             const { data, error: uploadError } = await supabase.storage
               .from("media")
               .upload(filePath, file);
 
-            if (uploadError) throw uploadError;
+            if (uploadError) {
+              console.error("Upload error:", uploadError);
+              return null;
+            }
 
-            const publicUrl = supabase.storage
+            const { data: publicUrlData } = await supabase.storage
               .from("media")
-              .getPublicUrl(filePath).publicUrl;
-            return publicUrl;
+              .getPublicUrl(filePath);
+
+            return publicUrlData?.publicUrl || null;
           });
 
           imageUrls = await Promise.all(uploadPromises);
+          imageUrls = imageUrls.filter((url) => url !== null);
         }
 
-        const { error } = await supabase.from("projects").insert({
+        console.log("Final Image URLs:", imageUrls);
+
+        const payload = {
           title: formData.get("title"),
           description: formData.get("description"),
           project_url: formData.get("project_url"),
           category: formData.get("category"),
           technologies: formData
             .get("technologies")
-            ?.toString()
-            .split(",")
+            ?.split(",")
             .map((t) => t.trim()),
-          image_url: JSON.stringify(imageUrls),
-        });
+          image_url: imageUrls.length > 0 ? imageUrls : null,
+        };
+
+        console.log("Payload to send:", payload);
+        const { error } = await supabase.from("projects").insert(payload);
 
         if (error) throw error;
 
         alert("Project added successfully!");
         form.reset();
+        selectedImages = [];
+        previewContainer.innerHTML = ""; // Hapus semua preview setelah submit
         window.location.reload();
       } catch (error) {
         alert("Error adding project: " + error.message);
