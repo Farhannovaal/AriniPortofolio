@@ -1,26 +1,67 @@
 ---
+import { supabase } from "../lib/supabase";
+
+// Fetch projects based on category
+const { data: projects, error } = await supabase
+  .from("projects")
+  .select("*")
+  .eq("category", "PENGEMBANGAN VIDEO PEMBELAJARAN");
+
+if (error) {
+  console.error("Error fetching projects:", error.message);
+}
 ---
+
 <section id="video-development" class="py-20 bg-gray-900">
   <div class="container mx-auto px-4">
     <h2 class="text-4xl font-bold mb-12 text-orange-500">PENGEMBANGAN VIDEO PEMBELAJARAN</h2>
     
     <div class="grid md:grid-cols-2 gap-12">
-      <div class="space-y-6">
-        <div class="aspect-video rounded-lg overflow-hidden">
-          <img src="/video-pembelajaran.jpg" alt="Video Pembelajaran" class="w-full h-full object-cover"/>
-        </div>
-        <p class="text-gray-300">
-          Video pembelajaran ini dibuat untuk mata kelas VI SD/MI Mata Pelajaran IPA. Fokus utama video pembelajaran ini adalah mengenai Makhluk Hidup dan Benda Mati. Dibuat dengan standar menggunakan Canva Pro, dan beberapa aplikasi pendukung lainnya.
-        </p>
-        <a href="#" class="text-orange-500 hover:text-orange-400">Link Video Pembelajaran →</a>
-      </div>
-      
-      <div class="space-y-6">
-        <div class="grid grid-cols-2 gap-4">
-          <img src="/video-thumbnail-1.jpg" alt="Video Thumbnail 1" class="rounded-lg"/>
-          <img src="/video-thumbnail-2.jpg" alt="Video Thumbnail 2" class="rounded-lg"/>
-        </div>
-      </div>
-    </div>
+        <!-- Render projects dynamically -->
+        {projects && projects.length > 0 ? (
+          projects.map((project) => (
+            <div class="mb-16">
+              <div class="grid md:grid-cols-2 gap-8 items-start">
+                <!-- SLIDER CONTAINER -->
+                <div class="relative w-full">
+                  <div class="overflow-x-auto flex gap-4 scroll-smooth snap-x snap-mandatory w-full">
+                    {project.image_url && project.image_url.length > 0 ? (
+                      project.image_url.map((img, index) => (
+                        <img
+                          key={index}
+                          src={img}
+                          alt={`${project.title} - ${index + 1}`}
+                          class="w-full md:w-[500px] h-64 object-cover rounded-lg shadow-xl snap-start flex-shrink-0"
+                        />
+                      ))
+                    ) : (
+                      <div class="bg-gray-700 rounded-lg shadow-xl w-full h-64 flex items-center justify-center text-gray-400">
+                        No Image Available
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <!-- PROJECT DETAILS -->
+                <div class="space-y-4">
+                  <h3 class="text-2xl font-semibold text-white">{project.title}</h3>
+                  <p class="text-gray-300">{project.description}</p>
+                  {project.project_url && (
+                    <a
+                      href={project.project_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-orange-500 hover:text-orange-400"
+                    >
+                      View Project →
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p class="text-gray-300">No projects found for this category.</p>
+        )}
   </div>
 </section>
