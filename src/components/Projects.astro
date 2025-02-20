@@ -1,32 +1,67 @@
 ---
+import { supabase } from "../lib/supabase";
+
+// Fetch projects based on category
+const { data: projects, error } = await supabase
+  .from("projects")
+  .select("*")
+  .eq("category", "CUSTOM");
+
+if (error) {
+  console.error("Error fetching projects:", error.message);
+}
 ---
-<section id="projects" class="py-20 bg-gray-800">
+<section id="curriculum" class="py-20 bg-gray-800">
   <div class="container mx-auto px-4">
-    <h2 class="text-4xl font-bold mb-12 text-orange-500">MY PROJECTS</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      <div class="bg-gray-900 rounded-lg overflow-hidden">
-        <img src="/project1.jpg" alt="Learning Materials" class="w-full h-48 object-cover"/>
-        <div class="p-6">
-          <h3 class="text-xl font-semibold mb-2">Learning Materials Development</h3>
-          <p class="text-gray-300">PPT untuk Pelatihan Position operator & Pit waiter</p>
-        </div>
-      </div>
+    <h2 class="text-4xl font-bold mb-12 text-orange-500">My Project</h2>
+    
+    <div class="grid md:grid-cols-3 gap-8">
+       <!-- Render projects dynamically -->
+       {projects && projects.length > 0 ? (
+        projects.map((project) => (
+          <div class="mb-16">
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+              <!-- SLIDER CONTAINER -->
+              <div class="relative w-full">
+                <div class="overflow-x-auto flex gap-4 scroll-smooth snap-x snap-mandatory w-full">
+                  {project.image_url && project.image_url.length > 0 ? (
+                    project.image_url.map((img, index) => (
+                      <img
+                        key={index}
+                        src={img}
+                        alt={`${project.title} - ${index + 1}`}
+                        class="w-full md:w-[500px] h-64 object-cover rounded-lg shadow-xl snap-start flex-shrink-0"
+                      />
+                    ))
+                  ) : (
+                    <div class="bg-gray-700 rounded-lg shadow-xl w-full h-64 flex items-center justify-center text-gray-400">
+                      No Image Available
+                    </div>
+                  )}
+                </div>
+              </div>
 
-      <div class="bg-gray-900 rounded-lg overflow-hidden">
-        <img src="/project2.jpg" alt="LMS Development" class="w-full h-48 object-cover"/>
-        <div class="p-6">
-          <h3 class="text-xl font-semibold mb-2">LMS Development</h3>
-          <p class="text-gray-300">Design cover, tools, roles, etc.</p>
-        </div>
-      </div>
-
-      <div class="bg-gray-900 rounded-lg overflow-hidden">
-        <img src="/project3.jpg" alt="Media Development" class="w-full h-48 object-cover"/>
-        <div class="p-6">
-          <h3 class="text-xl font-semibold mb-2">Media Development</h3>
-          <p class="text-gray-300">Development of various educational media content</p>
-        </div>
-      </div>
+              <!-- PROJECT DETAILS -->
+              <div class="space-y-4">
+                <h3 class="text-2xl font-semibold text-white">{project.title}</h3>
+                <p class="text-gray-300">{project.description}</p>
+                {project.project_url && (
+                  <a
+                    href={project.project_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-orange-500 hover:text-orange-400"
+                  >
+                    View Project →
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        ))
+      ) : (
+        <p class="text-gray-300">No projects found for this category.</p>
+      )}
     </div>
   </div>
 </section>

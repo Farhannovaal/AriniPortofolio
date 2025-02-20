@@ -26,6 +26,7 @@ const categories = [
   "PENDIDIKAN DAN PELATIHAN",
   "PENGEMBANGAN KURIKULUM",
   "GRAPHIC DESIGN",
+  "INTERN",
   "TALENT",
   "CUSTOM",
 ];
@@ -367,7 +368,13 @@ const projectsByCategory = projects?.reduce(
       try {
         let imageUrls = [];
 
-        // Mengupload gambar jika ada
+        // Jika ada gambar yang sudah ada, tambahkan ke imageUrls
+        const existingImages = Array.from(
+          previewContainer.querySelectorAll("img")
+        ).map((img) => img.src);
+        imageUrls = [...existingImages];
+
+        // Mengupload gambar baru jika ada
         if (selectedImages.length > 0) {
           const uploadPromises = selectedImages.map(async (file) => {
             const filePath = `media/media-${Date.now()}-${file.name}`;
@@ -387,9 +394,10 @@ const projectsByCategory = projects?.reduce(
             return publicUrlData?.publicUrl || null;
           });
 
-          imageUrls = (await Promise.all(uploadPromises)).filter(
+          const newImageUrls = (await Promise.all(uploadPromises)).filter(
             (url) => url !== null
           );
+          imageUrls = [...imageUrls, ...newImageUrls];
         }
 
         const payload = {
