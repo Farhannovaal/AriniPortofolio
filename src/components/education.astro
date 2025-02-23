@@ -1,9 +1,9 @@
 <section id="education" class="py-16 bg-gray-800 text-white">
   <div class="container mx-auto px-4 sm:px-6 w-full">
     <div
-      class="grid md:grid-cols-2 gap-8 items-center border border-green-500 p-8 rounded-lg transition-all duration-300 hover:border-orange-500 hover:shadow-orange-500/50 hover:shadow-lg"
+      class="grid md:grid-cols-3 gap-8 items-center border border-green-500 p-8 rounded-lg transition-all duration-300 hover:border-orange-500 hover:shadow-orange-500/50 hover:shadow-lg"
     >
-      <!-- Bagian Kiri - Education -->
+      {/* Bagian Kiri - Education */}
       <div class="text-center md:text-left">
         <h2
           class="text-4xl sm:text-5xl font-extrabold text-orange-500 uppercase animate-pulse"
@@ -16,14 +16,26 @@
         </p>
       </div>
 
-      <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
-        <!-- Bagian Gambar (Kiri) -->
-        <div class="w-full md:w-1/3 flex justify-center md:justify-start">
-          <img src="/unnes.jpg" alt="Logo UNNES" class="w-48 sm:w-56 md:w-64" />
+      {/* Bagian Tengah - Border */}
+      <div class="hidden md:block h-32 w-1 bg-green-500 mx-auto rounded-full">
+      </div>
+
+      {/* Bagian Kanan - Logo dan Teks */}
+      <div
+        class="flex flex-col md:flex-row items-center md:items-start gap-8 h-full"
+      >
+        {/* Bagian Gambar (Logo) */}
+        <div class="w-full md:w-1/2 h-1/2 flex justify-center md:justify-start">
+          <img
+            src="/logo-unnes.webp"
+            alt="Logo UNNES"
+            class="w-full h-full object-cover rounded-lg shadow-lg"
+            {/* Logo mengisi lebar dan tinggi penuh */}
+          />
         </div>
 
-        <!-- Bagian Teks (Kanan) -->
-        <div class="w-full md:w-2/3 text-center md:text-left">
+        {/* Bagian Teks (Samping Logo) */}
+        <div class="w-full md:w-1/2 text-center md:text-left">
           <h3 class="text-xl sm:text-2xl font-semibold text-blue-400">
             Universitas Negeri Semarang | S-1 | Educational Technology | 2021
           </h3>
@@ -44,6 +56,7 @@
     </div>
   </div>
 </section>
+
 <style>
   @keyframes fadeIn {
     from {
