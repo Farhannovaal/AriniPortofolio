@@ -5,63 +5,84 @@ import { supabase } from "../lib/supabase";
 const { data: projects, error } = await supabase
   .from("projects")
   .select("*")
-  .eq("category", "CUSTOM");
+  .eq("category", "TALENT");
 
 if (error) {
   console.error("Error fetching projects:", error.message);
 }
 ---
+
 <section id="curriculum" class="py-20 bg-gray-800">
   <div class="container mx-auto px-4">
-    <h2 class="text-4xl font-bold mb-12 text-orange-500">My Project</h2>
-    
-    <div class="grid md:grid-cols-3 gap-8">
-       <!-- Render projects dynamically -->
-       {projects && projects.length > 0 ? (
-        projects.map((project) => (
-          <div class="mb-16">
-            <div class="grid md:grid-cols-2 gap-8 items-start">
-              <!-- SLIDER CONTAINER -->
-              <div class="relative w-full">
-                <div class="overflow-x-auto flex gap-4 scroll-smooth snap-x snap-mandatory w-full">
-                  {project.image_url && project.image_url.length > 0 ? (
-                    project.image_url.map((img, index) => (
-                      <img
-                        key={index}
-                        src={img}
-                        alt={`${project.title} - ${index + 1}`}
-                        class="w-full md:w-[500px] h-64 object-cover rounded-lg shadow-xl snap-start flex-shrink-0"
-                      />
-                    ))
-                  ) : (
-                    <div class="bg-gray-700 rounded-lg shadow-xl w-full h-64 flex items-center justify-center text-gray-400">
-                      No Image Available
+    <h2 class="text-4xl font-bold mb-12 text-center text-orange-500">TALENT</h2>
+    <div class="max-w-7xl mx-auto bg-orange-700 rounded-lg p-2">
+      {
+        projects && projects.length > 0 ? (
+          <div class="overflow-x-auto scrollbar-hide">
+            <div class="flex gap-6 pb-4 justify-center">
+              {projects.map((project) => (
+                <div
+                  key={project.id}
+                  class="w-[350px] bg-gray-900 rounded-lg shadow-2xl p-6 flex-shrink-0 hover:scale-105 transition-transform duration-300"
+                >
+                  {/* SLIDER CONTAINER */}
+                  <div class="relative w-full mb-4">
+                    <div class="overflow-x-auto flex gap-4 scroll-smooth snap-x snap-mandatory w-full">
+                      {project.image_url && project.image_url.length > 0 ? (
+                        project.image_url.map((img, index) => (
+                          <img
+                            key={index}
+                            src={img}
+                            alt={`${project.title} - ${index + 1}`}
+                            class="w-full h-48 object-cover rounded-lg shadow-lg snap-start flex-shrink-0"
+                          />
+                        ))
+                      ) : (
+                        <div class="bg-gray-700 rounded-lg shadow-lg w-full h-48 flex items-center justify-center text-gray-400">
+                          No Image Available
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
+                  {/* TALENT DETAILS */}
+                  <div class="space-y-4">
+                    <h3 class="text-2xl font-semibold text-white">
+                      {project.title}
+                    </h3>
+                    <p class="text-gray-300 line-clamp-3">
+                      {project.description}
+                    </p>
+                    {project.project_url && (
+                      <a
+                        href={project.project_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-block text-orange-500 hover:text-orange-400 font-medium transition duration-300"
+                      >
+                        View Project →
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
-
-              <!-- PROJECT DETAILS -->
-              <div class="space-y-4">
-                <h3 class="text-2xl font-semibold text-white">{project.title}</h3>
-                <p class="text-gray-300">{project.description}</p>
-                {project.project_url && (
-                  <a
-                    href={project.project_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-orange-500 hover:text-orange-400"
-                  >
-                    View Project →
-                  </a>
-                )}
-              </div>
+              ))}
             </div>
           </div>
-        ))
-      ) : (
-        <p class="text-gray-300">No projects found for this category.</p>
-      )}
+        ) : (
+          <p class="text-gray-300 text-center">
+            No projects found for this category.
+          </p>
+        )
+      }
     </div>
   </div>
 </section>
+
+<style>
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+</style>

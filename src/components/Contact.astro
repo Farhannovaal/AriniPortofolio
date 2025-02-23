@@ -1,15 +1,81 @@
 ---
+import { supabase } from "../lib/supabase";
+
+// Fetch profile data
+const { data: profile, error } = await supabase
+  .from("profiles")
+  .select("*")
+  .limit(1)
+  .maybeSingle();
+
+if (error) {
+  console.error("Error fetching profile:", error.message);
+}
 ---
-<section id="contact" class="py-20 bg-gray-900">
-  <div class="container mx-auto px-4 text-center">
-    <h2 class="text-6xl font-bold mb-12 text-orange-500">TERIMA KASIH!</h2>
-    <div class="flex justify-center gap-8 text-gray-300">
-      <a href="mailto:halizaarini@gmail.com" class="hover:text-orange-500 flex items-center gap-2">
+
+<section id="contact" class="relative py-20 bg-orange-700 overflow-hidden">
+  {/* Background Image dengan Blur dan Opacity */}
+  <div class="absolute inset-0 z-0">
+    <img
+      src={profile?.avatar_url || "/default-avatar.png"}
+      alt="Background"
+      class="w-full h-full object-cover opacity-20 blur-sm"
+      {/* Opacity dan blur */}
+    />
+  </div>
+
+  {/* Konten */}
+  <div class="container mx-auto px-4 text-center relative z-10">
+    <h2 class="text-6xl font-bold mb-12 text-white">TERIMA KASIH!</h2>
+
+    {/* Kontak Email dan LinkedIn */}
+    <div class="flex justify-center gap-8 text-white mb-12">
+      <a
+        href="mailto:halizaarini@gmail.com"
+        class="hover:text-gray-900 flex items-center gap-2 transition-transform duration-300 hover:scale-110"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+          ></path>
+        </svg>
         <span>halizaarini@gmail.com</span>
       </a>
-      <a href="https://linkedin.com/in/halizaarini" target="_blank" class="hover:text-orange-500 flex items-center gap-2">
+      <a
+        href="https://linkedin.com/in/halizaarini"
+        target="_blank"
+        class="hover:text-gray-900 flex items-center gap-2 transition-transform duration-300 hover:scale-110"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.784 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
+          ></path>
+        </svg>
         <span>LinkedIn</span>
       </a>
+    </div>
+
+    {/* Tahun di bagian bawah */}
+    <div class="mt-12">
+      <span
+        class="bg-white text-orange-700 px-6 py-3 text-lg font-bold rounded-full shadow-md animate-bounce"
+      >
+        2025
+      </span>
     </div>
   </div>
 </section>
